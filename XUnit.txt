@@ -1,0 +1,324 @@
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+								XUnit
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Create A Console App project With .NET Framework
+
+
+
+
+
+
+
+Nuget
+-------------------------------------------
+
+XUnit
+
+Xunit.Core
+
+Xunit.runner.console
+
+xunit.runner.visualstudio
+
+
+
+
+
+
+Remove This If You Have Created UnitTestProject
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+								Method Display 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Make Following Changes WIthin App.Config File
+
+
+  
+<appSettings>
+    <add key="xunit.methodDisplay" value="method"/>
+  </appSettings>
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+								Attributes  + Annotations
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Reuse tests by using the Theory attribute and change only the parameters to a method. xUnit.net offers the same functionality with Theory and InlineData:
+
+
+ 
+        [Theory]
+        [InlineData(0, 0, 0)]
+        [InlineData(1, 0, 1)]
+        public void Add_with_values(int first, int second, int expectedResult)
+        {
+           // var result = Add(first, second);
+
+         //   Assert.Equal(expectedResult, result);
+        }
+
+
+
+
+   [Fact]
+   [Trait("Category", "Parallel")]
+        public void Add_1and2_gives3()
+        {
+            // var result = Add(1, 2);
+            //  Assert.Equal(3, result);
+        }
+
+
+
+        [Fact]
+        public void VerifyTitle ()
+        {
+            driver = new ChromeDriver();
+            String url = "https://www.facebook.com/";
+            driver.Navigate().GoToUrl(url);
+            Thread.Sleep(1000);
+
+
+
+            System.Console.WriteLine("****************************************");
+            System.Console.WriteLine("\r\n");
+            Assert.Equal("Facebook - Log In or Sign Up", driver.Title);
+            driver.Quit();
+        }
+
+
+
+
+
+				 /************************** DATA Driven Tests  ***************************/
+
+
+
+        public static IEnumerable<object[]> LoginTestData
+        {
+            get
+            {
+                List<object[]> testData = new List<object[]>();
+
+                testData.Add(new object[] { "abc@gmail.com", "abcd" });
+                testData.Add(new object[] { ("abd@gmail.com", "bbcd") });
+
+                return testData;
+            }
+        }
+
+
+
+
+
+
+
+
+        [Theory]
+        [MemberData(nameof(LoginTestData))]
+        public void FacebookTest(String UN, String PS)
+        {
+            IWebDriver driver = new ChromeDriver();
+            String url = "https://www.facebook.com/";
+            driver.Navigate().GoToUrl(url);
+            driver.Manage().Window.Maximize();
+
+            Thread.Sleep(2000);
+            var UserName = driver.FindElement(By.Id("email"));
+            var Password = driver.FindElement(By.Id("pass"));
+            IWebElement btn = driver.FindElement(By.CssSelector("#u_0_2"));
+
+
+
+            UserName.SendKeys(UN);
+            Password.SendKeys(PS);
+            btn.Submit();
+
+            Assert.Equal("Log into Facebook | Facebook", driver.Title);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Ignoring Tests
+ -----------------------
+
+        [Fact(Skip = "Thats how you ignore a test")]
+        public void ToIgnore()
+        {
+            Assert.False(true);
+        }
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+								ASSERTS
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+ public void Assserts()
+        {
+            Assert.Equal(1, 1);
+
+            Assert.Equal("London", "London");
+
+            Assert.StartsWith("Lon", "London");
+            Assert.EndsWith("on", "London");
+
+            Assert.Contains("Lon", "London");
+            Assert.DoesNotContain("Bern", "London");
+
+            Assert.Empty(new List<int>());
+            Assert.NotEmpty(new List<int>() { 1, 2, 3 });
+
+            Assert.True(1 == 1);
+            Assert.False(1 == 2);
+
+            Assert.Null(null);
+            Assert.NotNull("a");
+
+            Exception ex = Assert.Throws<ArgumentNullException>(() => MyMethod());
+
+
+            Assert.InRange(5, 1, 10);
+            Assert.NotInRange(-1, 0, 10);
+
+
+        }
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				Parallel Test Execution :  **********Only Working With JSon Based Configuration************************
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+https://xunit.net/docs/configuring-with-json
+
+
+
+1. Create A xunit.runner.json file 
+
+{
+  "exclude": [
+    "**/bin",
+    "**/bower_components",
+    "**/jspm_packages",
+    "**/node_modules",
+    "**/obj",
+    "**/platforms"
+  ],
+
+  "parallelizeTestCollections": true,
+
+
+  "methodDisplay": "method"
+
+}
+
+
+
+
+
+
+
+2. Add This File To project Root Directory  
+
+
+3. RC On This FIle > In Properties Window  >  Set  Copy If Newer
+
+
+
+
+
+
+parallelizeTestCollections
+
+Set this to true if the assembly is willing to run tests inside this assembly in parallel against each other. Tests in the same test collection will be run sequentially against each other, but tests in different test collections will be run in parallel against each other. Set this to false to disable all parallelization within this test assembly.
+
+JSON schema type: boolean
+Default value: true
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+using Xunit;
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+
+
+For .NET Core projects, create xunit.runner.json with:
+
+
+
+{
+  "parallelizeAssembly": false,
+  "parallelizeTestCollections": false
+}
+
+
+
+
+
+Also, your csproj should contain
+
+<ItemGroup>
+  <None Update="xunit.runner.json"> 
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+
+
+
+
+
+For old .Net Core projects, your project.json should contain
+
+"buildOptions": 
+{
+  "copyToOutput": {
+    "include": [ "xunit.runner.json" ]
+  }
+}
+
+
